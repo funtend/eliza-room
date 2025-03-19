@@ -1,12 +1,12 @@
-import type {
+import {
     ASTQueueItem,
     PluginDocumentation,
     TodoItem,
     EnvUsage,
 } from "./types/index.js";
-import type { AIService } from "./AIService/AIService.js";
-import type { GitManager } from "./GitManager.js";
-import type { Configuration } from "./Configuration.js";
+import { AIService } from "./AIService/AIService.js";
+import { GitManager } from "./GitManager.js";
+import { Configuration } from "./Configuration.js";
 import { FullDocumentationGenerator } from "./AIService/generators/FullDocumentationGenerator.js";
 import fs from "fs";
 import path from "path";
@@ -21,7 +21,9 @@ export class PluginDocumentationGenerator {
         private gitManager: GitManager,
         private configuration: Configuration
     ) {
-        this.fullDocumentationGenerator = new FullDocumentationGenerator(configuration);
+        this.fullDocumentationGenerator = new FullDocumentationGenerator(
+            configuration
+        );
     }
 
     /**
@@ -49,12 +51,13 @@ export class PluginDocumentationGenerator {
             console.error("package.json not found");
         }
         // Generate documentation
-        const documentation = await this.fullDocumentationGenerator.generatePluginDocumentation({
-            existingDocs,
-            packageJson,
-            todoItems,
-            envUsages,
-        });
+        const documentation =
+            await this.fullDocumentationGenerator.generatePluginDocumentation({
+                existingDocs,
+                packageJson,
+                todoItems,
+                envUsages,
+            });
 
         // Generate markdown content
         const markdownContent = this.generateMarkdownContent(

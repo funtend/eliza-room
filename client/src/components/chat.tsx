@@ -6,10 +6,10 @@ import {
 } from "@/components/ui/chat/chat-bubble";
 import { ChatInput } from "@/components/ui/chat/chat-input";
 import { ChatMessageList } from "@/components/ui/chat/chat-message-list";
-import { useTransition, animated, type AnimatedProps } from "@react-spring/web";
+import { useTransition, animated } from "@react-spring/web";
 import { Paperclip, Send, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import type { Content, UUID } from "@elizaos/core";
+import { Content, UUID } from "@elizaos/core";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api";
 import { cn, moment } from "@/lib/utils";
@@ -19,27 +19,23 @@ import ChatTtsButton from "./ui/chat/chat-tts-button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import AIWriter from "react-aiwriter";
-import type { IAttachment } from "@/types";
+import { IAttachment } from "@/types";
 import { AudioRecorder } from "./audio-recorder";
 import { Badge } from "./ui/badge";
-import { useAutoScroll } from "./ui/chat/hooks/useAutoScroll";
 
-type ExtraContentFields = {
+interface ExtraContentFields {
     user: string;
     createdAt: number;
     isLoading?: boolean;
-};
+}
 
 type ContentWithUser = Content & ExtraContentFields;
-
-type AnimatedDivProps = AnimatedProps<{ style: React.CSSProperties }> & {
-    children?: React.ReactNode;
-};
 
 export default function Page({ agentId }: { agentId: UUID }) {
     const { toast } = useToast();
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [input, setInput] = useState("");
+    const messagesContainerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const formRef = useRef<HTMLFormElement>(null);
@@ -49,10 +45,12 @@ export default function Page({ agentId }: { agentId: UUID }) {
     const getMessageVariant = (role: string) =>
         role !== "user" ? "received" : "sent";
 
-    const { scrollRef, isAtBottom, scrollToBottom, disableAutoScroll } = useAutoScroll({
-        smooth: true,
-    });
-   
+    const scrollToBottom = () => {
+        if (messagesContainerRef.current) {
+            messagesContainerRef.current.scrollTop =
+                messagesContainerRef.current.scrollHeight;
+        }
+    };
     useEffect(() => {
         scrollToBottom();
     }, [queryClient.getQueryData(["messages", agentId])]);
@@ -63,8 +61,6 @@ export default function Page({ agentId }: { agentId: UUID }) {
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            if (e.nativeEvent.isComposing) return;
             handleSendMessage(e as unknown as React.FormEvent<HTMLFormElement>);
         }
     };
@@ -151,7 +147,7 @@ export default function Page({ agentId }: { agentId: UUID }) {
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file?.type.startsWith("image/")) {
+        if (file && file.type.startsWith("image/")) {
             setSelectedFile(file);
         }
     };
@@ -168,28 +164,18 @@ export default function Page({ agentId }: { agentId: UUID }) {
         leave: { opacity: 0, transform: "translateY(10px)" },
     });
 
-    const CustomAnimatedDiv = animated.div as React.FC<AnimatedDivProps>;
-
     return (
         <div className="flex flex-col w-full h-[calc(100dvh)] p-4">
             <div className="flex-1 overflow-y-auto">
-                <ChatMessageList 
-                    scrollRef={scrollRef}
-                    isAtBottom={isAtBottom}
-                    scrollToBottom={scrollToBottom}
-                    disableAutoScroll={disableAutoScroll}
-                >
-                    {transitions((style, message: ContentWithUser) => {
+                <ChatMessageList ref={messagesContainerRef}>
+                    {transitions((styles, message) => {
                         const variant = getMessageVariant(message?.user);
+
                         return (
-                            <CustomAnimatedDiv
-                                style={{
-                                    ...style,
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    gap: "0.5rem",
-                                    padding: "1rem",
-                                }}
+                            // @ts-expect-error
+                            <animated.div
+                                style={styles}
+                                className="flex flex-col gap-2 p-4"
                             >
                                 <ChatBubble
                                     variant={variant}
@@ -214,21 +200,22 @@ export default function Page({ agentId }: { agentId: UUID }) {
                                             {/* Attachments */}
                                             <div>
                                                 {message?.attachments?.map(
-                                                    (attachment: IAttachment) => (
+                                                    (attachment, idx) => (
                                                         <div
                                                             className="flex flex-col gap-1 mt-2"
-                                                            key={`${attachment.url}-${attachment.title}`}
+                                                            key={idx}
                                                         >
                                                             <img
-                                                                alt="attachment"
-                                                                src={attachment.url}
+                                                                src={
+                                                                    attachment.url
+                                                                }
                                                                 width="100%"
                                                                 height="100%"
                                                                 className="w-64 rounded-md"
                                                             />
                                                             <div className="flex items-center justify-between gap-4">
-                                                                <span />
-                                                                <span />
+                                                                <span></span>
+                                                                <span></span>
                                                             </div>
                                                         </div>
                                                     )
@@ -277,7 +264,7 @@ export default function Page({ agentId }: { agentId: UUID }) {
                                         </div>
                                     </div>
                                 </ChatBubble>
-                            </CustomAnimatedDiv>
+                            </animated.div>
                         );
                     })}
                 </ChatMessageList>
@@ -300,7 +287,6 @@ export default function Page({ agentId }: { agentId: UUID }) {
                                     <X />
                                 </Button>
                                 <img
-                                    alt="Selected file"
                                     src={URL.createObjectURL(selectedFile)}
                                     height="100%"
                                     width="100%"

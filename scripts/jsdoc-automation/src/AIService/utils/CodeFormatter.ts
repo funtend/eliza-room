@@ -1,10 +1,9 @@
-import type { FileDocsGroup } from "../types";
+import { FileDocsGroup } from "../types";
 
 export class CodeFormatter {
-
     public ensureTypeScriptExtension(filePath: string): string {
         // If the path already ends with .ts, return it as is
-        if (filePath.endsWith('.ts')) {
+        if (filePath.endsWith(".ts")) {
             return filePath;
         }
         // Otherwise, append .ts
@@ -125,7 +124,6 @@ export class CodeFormatter {
         return sections.join("\n\n");
     }
 
-
     public formatFilePath(filePath: string): string {
         // Get relative path from src directory
         const srcIndex = filePath.indexOf("/src/");
@@ -154,7 +152,7 @@ export class CodeFormatter {
         return docSection;
     }
 
-    public truncateCodeBlock(code: string, maxLength = 8000): string {
+    public truncateCodeBlock(code: string, maxLength: number = 8000): string {
         if (code.length <= maxLength) return code;
 
         // Extract code blocks

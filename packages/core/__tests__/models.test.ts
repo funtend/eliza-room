@@ -1,4 +1,4 @@
-import { getModelSettings, getImageModelSettings, getEndpoint, models } from "../src/models.ts";
+import { getModel, getEndpoint, models } from "../src/models.ts";
 import { ModelProviderName, ModelClass } from "../src/types.ts";
 import { describe, test, expect, vi } from "vitest";
 
@@ -18,8 +18,6 @@ vi.mock("../settings", () => {
             LLAMACLOUD_MODEL_LARGE: "mock-llama-large",
             TOGETHER_MODEL_SMALL: "mock-together-small",
             TOGETHER_MODEL_LARGE: "mock-together-large",
-            LIVEPEER_GATEWAY_URL: "http://gateway.test-gateway",
-            IMAGE_LIVEPEER_MODEL: "ByteDance/SDXL-Lightning",
         },
         loadEnv: vi.fn(),
     };
@@ -45,7 +43,8 @@ describe("Model Provider Configuration", () => {
         });
 
         test("should have correct settings configuration", () => {
-            const smallModel = models[ModelProviderName.OPENAI].model[ModelClass.SMALL];
+            const smallModel =
+                models[ModelProviderName.OPENAI].model[ModelClass.SMALL];
             expect(smallModel.maxInputTokens).toBe(128000);
             expect(smallModel.maxOutputTokens).toBe(8192);
             expect(smallModel.temperature).toBe(0.6);
@@ -76,7 +75,8 @@ describe("Model Provider Configuration", () => {
         });
 
         test("should have correct settings configuration", () => {
-            const smallModel = models[ModelProviderName.ANTHROPIC].model[ModelClass.SMALL];
+            const smallModel =
+                models[ModelProviderName.ANTHROPIC].model[ModelClass.SMALL];
             expect(smallModel.maxInputTokens).toBe(200000);
             expect(smallModel.maxOutputTokens).toBe(4096);
             expect(smallModel.temperature).toBe(0.7);
@@ -107,7 +107,8 @@ describe("Model Provider Configuration", () => {
         });
 
         test("should have correct settings configuration", () => {
-            const smallModel = models[ModelProviderName.LLAMACLOUD].model[ModelClass.SMALL];
+            const smallModel =
+                models[ModelProviderName.LLAMACLOUD].model[ModelClass.SMALL];
             expect(smallModel.maxInputTokens).toBe(128000);
             expect(smallModel.maxOutputTokens).toBe(8192);
             expect(smallModel.temperature).toBe(0.7);
@@ -118,7 +119,9 @@ describe("Model Provider Configuration", () => {
     describe("Google Provider", () => {
         test("should have correct model mappings", () => {
             const googleModels = models[ModelProviderName.GOOGLE].model;
-            expect(googleModels[ModelClass.SMALL].name).toBe("gemini-2.0-flash-exp");
+            expect(googleModels[ModelClass.SMALL].name).toBe(
+                "gemini-2.0-flash-exp"
+            );
             expect(googleModels[ModelClass.MEDIUM].name).toBe(
                 "gemini-2.0-flash-exp"
             );
@@ -127,52 +130,35 @@ describe("Model Provider Configuration", () => {
             );
         });
     });
-    describe("Livepeer Provider", () => {
-        test("should have correct endpoint configuration", () => {
-            expect(getEndpoint(ModelProviderName.LIVEPEER)).toBe("https://dream-gateway.livepeer.cloud");
-        });
-
-        test("should have correct model mappings", () => {
-            const livepeerModels = models[ModelProviderName.LIVEPEER].model;
-            expect(livepeerModels[ModelClass.SMALL]?.name).toBe("meta-llama/Meta-Llama-3.1-8B-Instruct");
-            expect(livepeerModels[ModelClass.MEDIUM]?.name).toBe("meta-llama/Meta-Llama-3.1-8B-Instruct");
-            expect(livepeerModels[ModelClass.LARGE]?.name).toBe("meta-llama/Meta-Llama-3.1-8B-Instruct");
-            expect(livepeerModels[ModelClass.IMAGE]?.name).toBe("ByteDance/SDXL-Lightning");
-        });
-
-        test("should have correct settings configuration", () => {
-            const settings = getModelSettings(ModelProviderName.LIVEPEER, ModelClass.LARGE);
-            expect(settings?.maxInputTokens).toBe(8000);
-            expect(settings?.maxOutputTokens).toBe(8192);
-            expect(settings?.temperature).toBe(0);
-        });
-    });
 });
 
 describe("Model Retrieval Functions", () => {
     describe("getModel function", () => {
         test("should retrieve correct models for different providers and classes", () => {
-            expect(models[ModelProviderName.OPENAI].model[ModelClass.SMALL].name).toBe(
-                "gpt-4o-mini"
-            );
-            expect(models[ModelProviderName.ANTHROPIC].model[ModelClass.MEDIUM].name).toBe(
-                "claude-3-5-sonnet-20241022"
-            );
+            expect(
+                models[ModelProviderName.OPENAI].model[ModelClass.SMALL].name
+            ).toBe("gpt-4o-mini");
+            expect(
+                models[ModelProviderName.ANTHROPIC].model[ModelClass.MEDIUM]
+                    .name
+            ).toBe("claude-3-5-sonnet-20241022");
         });
 
         test("should handle environment variable overrides", () => {
             expect(
-                models[ModelProviderName.OPENROUTER].model[ModelClass.SMALL].name
+                models[ModelProviderName.OPENROUTER].model[ModelClass.SMALL]
+                    .name
             ).toBe("nousresearch/hermes-3-llama-3.1-405b");
             expect(
-                models[ModelProviderName.OPENROUTER].model[ModelClass.LARGE].name
+                models[ModelProviderName.OPENROUTER].model[ModelClass.LARGE]
+                    .name
             ).toBe("nousresearch/hermes-3-llama-3.1-405b");
         });
 
-        test("Test to ensure an invalid model provider returns undefined", () => {
-            expect(
-                getModelSettings("INVALID_PROVIDER" as any, ModelClass.SMALL)
-            ).toBe(undefined);
+        test("should throw error for invalid model provider", () => {
+            expect(() =>
+                getModel("INVALID_PROVIDER" as any, ModelClass.SMALL)
+            ).toThrow();
         });
     });
 
@@ -219,13 +205,19 @@ describe("Model Settings Validation", () => {
                 return; // Skip providers that are not fully configured
             }
             if (providerConfig.model[ModelClass.SMALL]) {
-                expect(providerConfig.model[ModelClass.SMALL].name).toBeDefined();
+                expect(
+                    providerConfig.model[ModelClass.SMALL].name
+                ).toBeDefined();
             }
             if (providerConfig.model[ModelClass.MEDIUM]) {
-                expect(providerConfig.model[ModelClass.MEDIUM].name).toBeDefined();
+                expect(
+                    providerConfig.model[ModelClass.MEDIUM].name
+                ).toBeDefined();
             }
             if (providerConfig.model[ModelClass.LARGE]) {
-                expect(providerConfig.model[ModelClass.LARGE].name).toBeDefined();
+                expect(
+                    providerConfig.model[ModelClass.LARGE].name
+                ).toBeDefined();
             }
         });
     });
@@ -244,18 +236,5 @@ describe("Environment Variable Integration", () => {
         expect(togetherConfig.model[ModelClass.SMALL].name).toBe(
             "meta-llama/Llama-3.2-3B-Instruct-Turbo"
         );
-    });
-});
-
-describe("Generation with Livepeer", () => {
-    test("should have correct image generation settings", () => {
-        const livepeerConfig = models[ModelProviderName.LIVEPEER];
-        expect(livepeerConfig.model[ModelClass.IMAGE]?.name).toBe("ByteDance/SDXL-Lightning");
-        expect(getModelSettings(ModelProviderName.LIVEPEER, ModelClass.SMALL)?.temperature).toBe(0);
-    });
-
-    test("should use default image model", () => {
-        delete process.env.IMAGE_LIVEPEER_MODEL;
-        expect(getImageModelSettings(ModelProviderName.LIVEPEER)?.name).toBe("ByteDance/SDXL-Lightning");
     });
 });

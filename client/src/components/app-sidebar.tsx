@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 import { apiClient } from "@/lib/api";
 import { NavLink, useLocation } from "react-router";
-import type { UUID } from "@elizaos/core";
+import { type UUID } from "@elizaos/core";
 import { Book, Cog, User } from "lucide-react";
 import ConnectionStatus from "./connection-status";
 
@@ -37,7 +37,6 @@ export function AppSidebar() {
                         <SidebarMenuButton size="lg" asChild>
                             <NavLink to="/">
                                 <img
-                                    alt="elizaos-icon"
                                     src="/elizaos-icon.png"
                                     width="100%"
                                     height="100%"
@@ -63,8 +62,8 @@ export function AppSidebar() {
                             {query?.isPending ? (
                                 <div>
                                     {Array.from({ length: 5 }).map(
-                                        (_, _index) => (
-                                            <SidebarMenuItem key={"skeleton-item"}>
+                                        (_, index) => (
+                                            <SidebarMenuItem key={index}>
                                                 <SidebarMenuSkeleton />
                                             </SidebarMenuItem>
                                         )
