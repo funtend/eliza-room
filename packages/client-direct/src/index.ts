@@ -132,6 +132,31 @@ export class DirectClient {
             express.static(path.join(process.cwd(), "/generatedImages"))
         );
 
+        this.app.use((req: any, res: any, next: any): void => {
+            const allowedOrigins = [
+                "https://lucidity.agentmeme.xyz",
+                "https://lucidity.agentmeme.xyz/es",
+                "https://lucidity.agentmeme.xyz/en",
+            ];
+
+            const requestOrigin = req.get("origin");
+
+            if (requestOrigin && !allowedOrigins.includes(requestOrigin)) {
+                return res
+                    .status(403)
+                    .json({ error: "Origen no permitido", requestOrigin });
+            }
+
+            const apiKey = process.env.RENDER_API_KEY;
+
+            if (req.get("x-api-key") !== apiKey) {
+                res.status(401).json({ error: "Clave API inválida" });
+                return;
+            }
+
+            next();
+        });
+
         const apiRouter = createApiRouter(this.agents, this);
         this.app.use(apiRouter);
 

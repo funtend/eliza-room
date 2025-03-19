@@ -9,10 +9,17 @@ concatenated-output.ts
 embedding-cache.json
 packages/plugin-buttplug/intiface-engine
 
+/client/
+/.github/
+/backup/
+/cache/
+/docs/
+/.vscode/
+/.devcontainer/
+/tests/
 .idea
 .DS_Store
 
-backup/
 dist/
 # Allow models directory but ignore model files
 models/*.gguf

@@ -48,7 +48,8 @@
             "dependsOn": ["@elizaos/plugin-trustdb#build"]
         },
         "eliza-docs#build": {
-            "outputs": ["build/**"]
+            "outputs": ["build/**"],
+            "cache": false
         },
         "dev": {
             "persistent": true,
